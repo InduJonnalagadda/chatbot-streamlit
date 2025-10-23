@@ -255,8 +255,25 @@
  
 
 import streamlit as st
+from groq import Groq
+import os
  
-# Hardcoded credentials (for demo purposes only!)
+
+
+def get_groq_api_key():
+    try:
+        return st.secrets["GROQ_API_KEY"]
+    except:
+        return os.getenv("GROQ_API_KEY")
+ 
+GROQ_API_KEY = get_groq_api_key()
+ 
+if not GROQ_API_KEY:
+    st.error("⚠️ Groq API key not found!")
+    st.info("Create .streamlit/secrets.toml with:\nGROQ_API_KEY = \"your-api-key\"")
+    st.stop()
+
+# Hardcoded credentials (for demo purposes only!) 
 
 USERNAME = "admin"
 
