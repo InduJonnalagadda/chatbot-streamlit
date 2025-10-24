@@ -253,58 +253,92 @@
 #     unsafe_allow_html=True
 # )
  
+# ----------------------------------------------------------------------------------
+# import streamlit as st
+# from groq import Groq
+# import os
+ 
+
+
+# def get_groq_api_key():
+#     try:
+#         return st.secrets["GROQ_API_KEY"]
+#     except:
+#         return os.getenv("GROQ_API_KEY")
+ 
+# GROQ_API_KEY = get_groq_api_key()
+
+# if not GROQ_API_KEY:
+#     st.error("⚠️ Groq API key not found!")
+#     st.info("Create .streamlit/secrets.toml with:\nGROQ_API_KEY = \"your-api-key\"")
+#     st.stop()
+
+# # Hardcoded credentials (for demo purposes only!) 
+
+# USERNAME = "admin"
+
+# PASSWORD = "1234"
+ 
+# def login():
+
+#     st.title("🔐 Login Page")
+ 
+#     # Input fields
+
+#     username = st.text_input("Username")
+
+#     password = st.text_input("Password", type="password")
+ 
+#     # Login button
+
+#     if st.button("Login"):
+
+#         if username == USERNAME and password == PASSWORD:
+
+#             st.success("Login successful!")
+
+#             st.write("Welcome,", username)
+
+#         else:
+
+#             st.error("Invalid username or password")
+ 
+# if __name__ == "__main__":
+
+#     login()
+
+# .........................................................................
 
 import streamlit as st
-from groq import Groq
-import os
- 
+import requests
+
+API_URL = "http://127.0.0.1:8000/login"  # FastAPI endpoint
+
+st.set_page_config(page_title="Login (FastAPI + Streamlit)", page_icon="🔐")
+
+st.title("🔐 Login Page")
+
+with st.form("login_form"):
+    username = st.text_input("Username", key="login_username")
+    password = st.text_input("Password", type="password", key="login_password")
+    submitted = st.form_submit_button("Login")
+
+if submitted:
+    if not username or not password:
+        st.error("Please enter username and password.")
+    else:
+        try:
+            resp = requests.post(API_URL, json={"username": username, "password": password}, timeout=10)
+            if resp.status_code == 200:
+                data = resp.json()
+                st.success(data.get("message", "Login successful"))
+                st.write("Welcome,", data.get("user"))
+            elif resp.status_code == 401:
+                # detail comes from FastAPI's HTTPException
+                st.error(resp.json().get("detail", "Unauthorized"))
+            else:
+                st.error(f"Unexpected response: {resp.status_code} - {resp.text}")
+        except requests.RequestException as e:
+            st.error(f"Request failed: {e}")
 
 
-def get_groq_api_key():
-    try:
-        return st.secrets["GROQ_API_KEY"]
-    except:
-        return os.getenv("GROQ_API_KEY")
- 
-GROQ_API_KEY = get_groq_api_key()
- 
-if not GROQ_API_KEY:
-    st.error("⚠️ Groq API key not found!")
-    st.info("Create .streamlit/secrets.toml with:\nGROQ_API_KEY = \"your-api-key\"")
-    st.stop()
-
-# Hardcoded credentials (for demo purposes only!) 
-
-USERNAME = "admin"
-
-PASSWORD = "1234"
- 
-def login():
-
-    st.title("🔐 Login Page")
- 
-    # Input fields
-
-    username = st.text_input("Username")
-
-    password = st.text_input("Password", type="password")
- 
-    # Login button
-
-    if st.button("Login"):
-
-        if username == USERNAME and password == PASSWORD:
-
-            st.success("Login successful!")
-
-            st.write("Welcome,", username)
-
-        else:
-
-            st.error("Invalid username or password")
- 
-if __name__ == "__main__":
-
-    login()
-
- 
